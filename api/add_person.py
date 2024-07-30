@@ -3,22 +3,30 @@ import json
 import os
 import gspread
 from google.oauth2.service_account import Credentials
+import traceback
 
 def get_credentials():
-    creds_json = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-    creds_dict = json.loads(creds_json)
-    return Credentials.from_service_account_info(creds_dict)
+    try:
+        creds_json = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        if not creds_json:
+            raise ValueError("GOOGLE_APPLICATION_CREDENTIALS environment variable is not set")
+        creds_dict = json.loads(creds_json)
+        return Credentials.from_service_account_info(creds_dict)
+    except Exception as e:
+        return f"Error in get_credentials: {str(e)}"
 
 def add_person_to_sheet(firstname, lastname, email, telephone):
-    creds = get_credentials()
-    client = gspread.authorize(creds)
-    
-    # Make sure to replace 'Visitor Database' with your actual Google Sheet name
-    sheet = client.open('Visitor Database').sheet1
-    
-    row = [firstname, lastname, email, telephone]
-    sheet.append_row(row)
-    return ','.join(row)
+    try:
+        creds = get_credentials()
+        if isinstance(creds, str):  # This means there was an error
+            raise ValueError(creds)
+        client = gspread.authorize(creds)
+        sheet = client.open('Visitor Database').sheet1
+        row = [firstname, lastname, email, telephone]
+        sheet.append_row(row)
+        return ','.join(row)
+    except Exception as e:
+        return f"Error in add_person_to_sheet: {str(e)}"
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -28,10 +36,13 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             qr_data = add_person_to_sheet(data['firstname'], data['lastname'], data['email'], data['telephone'])
+            if qr_data.startswith("Error"):
+                raise ValueError(qr_data)
             response = json.dumps({'success': True, 'qr_data': qr_data})
             status_code = 200
         except Exception as e:
-            response = json.dumps({'success': False, 'error': str(e)})
+            error_message = f"Error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+            response = json.dumps({'success': False, 'error': error_message})
             status_code = 500
 
         self.send_response(status_code)
