@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Visitor Management System</h1>
+        <form id="addPersonForm">
+            <input type="text" id="firstname" placeholder="First Name" required>
+            <input type="text" id="lastname" placeholder="Last Name" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="tel" id="telephone" placeholder="Telephone" required>
+            <button type="submit">Add Person</button>
+        </form>
+        <div id="qrcode"></div>
+        <div id="scanner">
+            <video id="preview"></video>
+        </div>
+        <div id="result"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
